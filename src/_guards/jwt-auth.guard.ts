@@ -37,7 +37,7 @@ import { IS_PUBLIC_KEY } from 'src/_decorators/public.decorator';
         // 💡 We're assigning the payload to the request object here
         // so that we can access it in our route handlers
         request['user'] = payload;
-        console.log('Protected route',request);
+        // console.log('Protected route',request['user']);
         
       } catch {
         throw new UnauthorizedException('Guard couldnot verify security token');

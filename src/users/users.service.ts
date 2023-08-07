@@ -135,12 +135,7 @@ export class UsersService {
 
   async findAll(){
     return this.users.map(usr => {
-      return {
-        userId: usr.id,
-        username: usr.username,
-        email: usr.email,
-        createdAt: usr.createdAt
-      }
+      return toUserDto(usr)
     });
   }
 }
