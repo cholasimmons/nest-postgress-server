@@ -58,12 +58,17 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+# ⚠️ Caution!
+This repo is still in active development.
+- You will need a running instance of Postgres, I use Laragon but standalone Postgres or a Postgres Docker image is also fine.
+- See `.env.example` for sample env data.
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
 ## Stay in touch
-
+- Repo Owner [Chola Simmons](https://simmons.studio)
 - Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
