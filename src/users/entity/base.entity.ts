@@ -1,16 +1,16 @@
-import { Column, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export class BaseEntity{
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn('uuid') //uuid
     // @Column({ type: 'varchar', nullable: false, unique: true })
     id: string;
 
-    @Column({ type: 'timestamptz', nullable: false, default: ()=>'CURRENT_DATE' })
+    @CreateDateColumn({ type: 'timestamptz', nullable: false })
     createdAt: Date;
 
-    @Column({ type: 'timestamptz', nullable: true, default: null })
+    @UpdateDateColumn({ type: 'timestamptz', nullable: true })
     updatedAt?: Date;
 
-    @Column({type: 'boolean', default: true, nullable: false})
+    @Column({type: 'bool', default: true})
     isActive: boolean;
 }

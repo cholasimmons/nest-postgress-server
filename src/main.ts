@@ -1,18 +1,17 @@
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder, SwaggerDocumentOptions } from '@nestjs/swagger';
 import helmet from 'helmet';
-import { HttpExceptionFilter } from './_error-handling/http-exception.filter';
-import { AllExceptionsFilter } from './_error-handling/all-exceptions.filter';
 import * as cookieParser from 'cookie-parser';
  import { join } from 'path';
+import { VERSION_NEUTRAL, Version, VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { abortOnError: false, bodyParser: true });
 
   const corsOptions = {
-    origin: 'http://localhost:'+(process.env.NEST_PORT || 3000),
+    origin: 'http://localhost:'+(process.env.PORT || 3000),
     optionsSuccessStatus: 200
   };
 
@@ -37,13 +36,15 @@ async function bootstrap() {
   // app.use(cors(corsOptions));
   app.use(cookieParser());
   // app.useGlobalGuards(LocalAuthGuard());
-  const { httpAdapter } = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+  // const { httpAdapter } = app.get(HttpAdapterHost);
+  // app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
   // Render Views
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');
+
+  app.enableVersioning({type: VersioningType.URI, defaultVersion: '1'})
 
   await app.listen((process.env.PORT || 3000), async () => {
     console.log('Mataka Server running: ',await app.getUrl());

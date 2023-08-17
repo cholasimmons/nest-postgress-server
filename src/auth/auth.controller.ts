@@ -8,6 +8,7 @@ import { LoginUserDto } from 'src/users/dto/login-user.dto';
 import { ApiBody, ApiExtraModels, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/_guards/jwt-auth.guard';
 import { UsersService } from 'src/users/users.service';
+import { JwtToken } from 'src/_interfaces/payload.interface';
 
 @ApiTags('User Auth')
 @Controller('auth')
@@ -18,25 +19,21 @@ export class AuthController {
     @Post('login')
     @Public()
     @Header('accept', 'application/json')
-    public async login(@Body() loginUserDto: LoginUserDto): Promise<LoginStatus> {
-        if(!loginUserDto) { 
-            throw new HttpException("User data not provided", HttpStatus.BAD_REQUEST);
-            return { success: false, message: `No User info provided`}; 
-        }
-        
+    public async login(@Body() loginUserDto: LoginUserDto): Promise<JwtToken> {
         // console.log('[Auth Controller]: Attempting to sign in: ',req);
         return await this.authService.login(loginUserDto);
         // return await this.authService.login(req.user);
-        // return { success: false, message: 'Testing'}
+        // return { success: true, message: `Welcome to our Server ${loginUserDto.email}`}
     }
 
 
     @Get('profile')
     // @Public() 
-    // @UseGuards(AuthenticationGuard)
-    getProfile(){
-        // console.log(req);
-        return 'Profile';
+    // @UseGuards(JwtAuthGuard)
+    public getProfile(@Req() req: Request){
+        const payload: any = req.user;
+        return this.usersSvc.findOne(payload);
+        // return `Profile: ${payload.email}`;
     }
 
 
@@ -46,15 +43,14 @@ export class AuthController {
         return this.authService.signOut();
     }
 
-
     @Public()
     @Post('register')
     @Header('accept', 'application/x-www-form-urlencoded')
-    public async register(@Body() createUserDto: CreateUserDto): Promise<RegistrationStatus> {
+    public async register(@Body() createUserDto: CreateUserDto): Promise<RegistrationStatus> {        
         const result: RegistrationStatus = await this.authService.register(createUserDto)
 
         if(!result.success) {
-            throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+            throw new HttpException(result.message, HttpStatus.CONFLICT)
         }
         return result;
     }

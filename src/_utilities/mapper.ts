@@ -4,9 +4,9 @@ import { UserDto } from "src/users/dto/user.dto";
 import { UserEntity } from "src/users/entity/user.entity";
 
 export const toUserDto = (data: UserEntity): UserDto => {  
-    const { id, username, email, isActive, createdAt, roles } = data;
+    const { id, email, isActive, createdAt, roles, isVerified } = data;
     
     // Basically get's rid of the password
-    let userDto: UserDto = { id, username, email, isActive, createdAt, roles };
+    let userDto: UserDto = { id, email, createdAt, roles, isActive, isVerified };
     return userDto;
 };

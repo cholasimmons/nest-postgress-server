@@ -5,6 +5,7 @@ import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Public } from './_decorators/public.decorator';
 import { Observable, interval, map } from 'rxjs';
 import { MessageEvent } from './_interfaces/events.interface';
+import { CreateMarketRequestDto } from './dto/create-market-request.dto';
 
 
 @ApiTags('Home')
@@ -39,5 +40,11 @@ export class AppController {
     };
     */
     return interval(1000).pipe(map((_) => ({ data: { hello: 'world' } }) ));
+  }
+
+
+  @Post()
+  async createMarket(@Body() createMarketRequest:  CreateMarketRequestDto){
+    await this.appService.createMarket(createMarketRequest)
   }
 }

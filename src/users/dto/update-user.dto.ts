@@ -42,6 +42,9 @@ import {
     @IsOptional()
     @IsStrongPassword()
     newPassword?: string;
+
+    @IsBoolean()
+    verified?: boolean;
   }
 
 function IsRequiredWith(arg0: string[]): (target: UpdateUserInput, propertyKey: "oldPassword") => void {

@@ -40,7 +40,7 @@ import { IS_PUBLIC_KEY } from 'src/_decorators/public.decorator';
         // console.log('Protected route',request['user']);
         
       } catch {
-        throw new UnauthorizedException('Guard couldnot verify security token');
+        throw new UnauthorizedException('Guard could not verify security token');
       }
       return true;
     }

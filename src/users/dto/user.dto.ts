@@ -1,12 +1,20 @@
-import { IsArray, IsBoolean, IsDate, IsEmail, IsNotEmpty } from "class-validator";
+import { IsArray, IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from "class-validator";
 import { Role } from "src/_enums/role.enum";
 
 class User {  
     @IsNotEmpty() id: string;
-    @IsNotEmpty() username: string;
-    @IsNotEmpty() @IsEmail() email: string;
-    @IsNotEmpty() @IsArray() roles: Role[];
+
+    @IsNotEmpty()
+    @IsEmail(undefined, {message: 'An email is required'})
+    email: string;
+
+    @IsNotEmpty()
+    @IsArray()
+    roles: Role[];
+
     @IsNotEmpty() @IsDate() createdAt: Date;
+    @IsDate() updatedAt?: Date;
     @IsNotEmpty() @IsBoolean() isActive: boolean;
+    @IsNotEmpty() @IsBoolean() isVerified: boolean;
 }
 export {User as UserDto}

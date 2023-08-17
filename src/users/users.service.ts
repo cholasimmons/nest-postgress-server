@@ -1,22 +1,22 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { IUser } from 'src/_interfaces/user.interface';
+import { HttpException, HttpStatus, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { LoginUserDto } from './dto/login-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entity/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { UserDto } from './dto/user.dto';
-import { toUserDto } from 'src/_utilities/mapper';
 import { CreateUserDto } from './dto/create-user.dto';
-import { comparePasswords } from 'src/_utilities/password.helper';
+import { toUserDto } from 'src/_utilities/mapper';
+import { UserRepository } from './user.repository';
 import { Role } from 'src/_enums/role.enum';
+import { comparePasswords } from 'src/_utilities/password.helper';
 
 @Injectable()
 export class UsersService {
 
   constructor(@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
-    private dataSource: DataSource
   ){}
 
+  /*
   private users: UserEntity[] = [
       {
         id: '0011',
@@ -55,87 +55,70 @@ export class UsersService {
         isActive: true,
       },
   ];
+  */
 
-  async findOne({email}: LoginUserDto): Promise<UserDto> {
-    // const user = await this.userRepo.findOne(options);
-    const user = await this.users.find(usr => usr.email === email);
+  async findOne(email: string): Promise<UserEntity> {
+    // console.log('[USER SERVICE] findOne(email) ',email,' User: ',email);
+    const user = await this.userRepo.findOne({where: { email} });
 
-    if(!user) throw new HttpException('No User found in system', HttpStatus.NO_CONTENT);
-    // return toUserDto(user);
-    return toUserDto(user);
+    if(!user) new NotFoundException('User not found');
+  
+    return user!
   }
+
 
   async findByLogin({email, password} : LoginUserDto): Promise<UserDto> {    
-    // const user = await this.userRepo.findOne({ where: {email} });
-    const user: UserEntity|undefined = await this.users.find(usr => usr.email === email);
+    const user = await this.userRepo.findOne({ where: {email} });
 
     //console.log('[Users Service] LoginUserDto: ', loginUserDto.email);
-    // const user: IUser|undefined = this.users.find(usr => usr.username === loginUserDto.username);
     
-    if(!user) {
-        throw new HttpException('User not found', HttpStatus.NO_CONTENT);    
-    }
+    if(!user) throw new NotFoundException('User not found');
 
-    // compare passwords    
-    const areEqual: boolean = comparePasswords(user.password!, password);
+    const passAlike = comparePasswords(user!.password, password);
+
+    if(!passAlike) throw new NotFoundException('User not found');
     
-    if (areEqual === false) {
-        throw new HttpException('Invalid credentials dude!', HttpStatus.UNAUTHORIZED);    
-    }
-    
-    return toUserDto(user);  
-    //return user;  
+    return toUserDto(user!);
+    // return user;
   }
 
-  async findByPayload(payload: any): Promise<UserDto> {
+  
+  async findByPayload(payload: any): Promise<UserEntity> {
     return await this.findOne(payload);
   }
+  
 
-  async createUser(createUserDto: CreateUserDto): Promise<UserDto> {    
-    // console.log('[Users Service] Captured User. ',userDto.email);
-    
-    const { username, password, email } = createUserDto;
-    
-    // check if the user exists in the db
-    let userByEmailInDb, userByUsernameInDb = false;
+  async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
 
-    this.users.forEach(usr => {
-      usr.email === email ? userByEmailInDb = true : userByEmailInDb = false;
-      usr.username === username ? userByUsernameInDb = true : userByUsernameInDb = false;
-    });
-    /* const userInDb = await this.userRepo.findOne({ 
-      where: { email }
-    }); */
-    if(userByEmailInDb) {
-      throw new HttpException('Email already exists', HttpStatus.CONFLICT);    
-    }
-    if(userByUsernameInDb) {
-      throw new HttpException('Username is taken', HttpStatus.CONFLICT);    
-    }
-    // const user: UserEntity = await this.userRepo.create({ username, password, email });
-    const newUser = { id: (this.users.length+1).toString(), username: username, email: email, roles: [Role.Guest], createdAt: new Date(), isActive: true}
-    this.users.push(newUser)
-    // await this.userRepo.save(user);
-    return toUserDto(newUser);  
+    const { password, email } = createUserDto;
+
+    let user = new UserEntity;
+    user.email = email.trim()
+    user.password = password.trim()
+
+    return await this.userRepo.save(user);
   }
 
+  async findById(id: string): Promise<UserDto> {
+    const user = await this.userRepo.findOneBy({ id });
+    
+    if(!user) new NotFoundException('No User with that ID');
 
-  async findUsersById(id: string) {
-    // return this.userRepo.findBy({ id: In([]) });
-    return this.users.find(usr => usr.id === id);
+    return toUserDto(user!);
   }
-
-
+/*
   async createMany(users: UserEntity[]){
     await this.dataSource.transaction(async manager => {
       await manager.save(users[0]);
       await manager.save(users[1]);
     })
   }
+*/
+  async findAll(): Promise<UserDto[]>{
+    return this.userRepo.find();
+  }
 
-  async findAll(){
-    return this.users.map(usr => {
-      return toUserDto(usr)
-    });
+  async remove(id: number): Promise<void>{
+    await this.userRepo.delete(id);
   }
 }
