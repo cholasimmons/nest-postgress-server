@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Connection } from '../_database/connection.provider';
+import { Connection } from './connection.provider';
 
 @Injectable()
 export class ConnectionService {
