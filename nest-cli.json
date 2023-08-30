@@ -20,6 +20,8 @@
         }
       }
     ],
+    "assets": [
+    ],
     "webpack": true,
     "tsConfigPath": "apps/rosetech-gateway/tsconfig.app.json"
   },
@@ -36,7 +38,7 @@
       }
     },
     "auth": {
-      "type": "application",
+      "type": "microservice",
       "root": "apps/auth",
       "entryFile": "main",
       "sourceRoot": "apps/auth/src",

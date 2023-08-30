@@ -1,20 +1,27 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload, JwtToken } from 'src/_interfaces/payload.interface';
+import { JwtPayload, JwtToken } from '../_interfaces/payload.interface';
 
-import { LoginStatus, RegistrationStatus } from 'src/_interfaces/status.interface';
-import { toUserDto } from 'src/_utilities/mapper';
-import { comparePasswords } from 'src/_utilities/password.helper';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { LoginUserDto } from 'src/users/dto/login-user.dto';
-import { UserDto } from 'src/users/dto/user.dto';
-import { UserEntity } from 'src/users/entity/user.entity';
-import { UsersService } from 'src/users/users.service';
+import { ActionStatus, LoginStatus, RegistrationStatus } from '../_interfaces/status.interface';
+import { toUserDto } from '../_utilities/mapper';
+import { comparePasswords } from '../_utilities/password.helper';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { LoginUserDto } from '../users/dto/login-user.dto';
+import { UserDto } from '../users/dto/user.dto';
+import { UserEntity } from '../users/entity/user.entity';
+import { UsersService } from '../users/users.service';
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
+import { appConstants } from 'apps/constants';
+import { ClientProxy } from '@nestjs/microservices';
+import { Response } from 'express';
+import { timeout } from 'rxjs';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly usersSvc: UsersService, private readonly jwtSvc: JwtService, private configSvc: ConfigService){}
+    constructor(private readonly usersSvc: UsersService,
+        private readonly jwtSvc: JwtService,
+        private configSvc: ConfigService, @Inject(appConstants.AUTH_SERVICE.name) private readonly authClient: ClientProxy){}
     
     /**
      * Local-strategy method
@@ -61,8 +68,8 @@ export class AuthService {
         return { token };
     }
 
-    async register(createUserDto: CreateUserDto): Promise<RegistrationStatus> {
-        let status: RegistrationStatus = { success: false, message: 'Registeration was not successful' };
+    async register(createUserDto: CreateUserDto): Promise<ActionStatus> {
+        let status: ActionStatus = { success: false, message: 'Registeration was not successful' };
 
         try {
             const user: UserDto = await this.usersSvc.findOne(createUserDto.email);
@@ -75,13 +82,19 @@ export class AuthService {
             
             status = { success: true, message: `User ${returnedUser.email} successfully created!` };
         } catch (err) {
-            status = { success: false, message: `${err}` };
-            // throw new ExceptionsHandler() 
+            // status = { success: false, message: `${err}` };
+            throw new ExceptionsHandler() 
         }
         return status;  
     }
 
     async signOut(): Promise<string> {
         return "Successfully signed out"
+    }
+
+    external(res: string){
+        console.log('Sent to AUTH Microservice: ',res);
+        
+        return this.authClient.send('hello', res).pipe(timeout(5000))
     }
 }

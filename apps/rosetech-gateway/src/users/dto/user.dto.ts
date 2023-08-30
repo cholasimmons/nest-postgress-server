@@ -1,5 +1,5 @@
 import { IsArray, IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from "class-validator";
-import { Role } from "src/_enums/role.enum";
+import { Role } from "../../_enums/role.enum";
 
 class User {  
     @IsNotEmpty() id: string;

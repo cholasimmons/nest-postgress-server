@@ -15,8 +15,10 @@ export class AppController {
 
   @Get()
   @Public()
-  root(@Res() res: Response) {
-    return res.render('index', {message: 'Welcome to our brand new server!'})
+  @Render('index')
+  root() {
+    return {message: 'Welcome to our brand new server!'}
+    // @Res() res: Response || return res.render('index', {message: 'Welcome to our brand new server!'})
     // this.appService.getHello();
   }
 
@@ -42,9 +44,4 @@ export class AppController {
     return interval(1000).pipe(map((_) => ({ data: { hello: 'world' } }) ));
   }
 
-
-  @Post()
-  async createMarket(@Body() createMarketRequest:  CreateMarketRequestDto){
-    await this.appService.createMarket(createMarketRequest)
-  }
 }

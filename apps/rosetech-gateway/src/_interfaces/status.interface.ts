@@ -8,3 +8,7 @@ export interface LoginStatus {
     message: string,
 }
 
+export interface ActionStatus {
+    success: boolean;
+    message: string,
+}

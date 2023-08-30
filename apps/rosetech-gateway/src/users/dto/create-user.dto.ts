@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsEmail, MinLength, IsArray, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from 'src/_enums/role.enum';
+import { Role } from '../../_enums/role.enum';
 
 const passwordRegEx = /^(?=.*[a-z])(?=.*[A-Z])(?=.*d)(?=.*[@$!%*?&])[A-Za-zd@$!%*?&]{8,20}$/;
 

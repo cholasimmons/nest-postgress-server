@@ -19,7 +19,7 @@ async function bootstrap() {
     .setTitle('Mataka Server.')
     .setDescription('Mataka API documentation.')
     .setContact('Frank Simmons', 'https://simmons.studio', 'frank@simmons.studio')
-    .setVersion('0.1')
+    .setVersion('0.2')
     // .addTag('General Endpoints')
     .build()
   const options: SwaggerDocumentOptions = {

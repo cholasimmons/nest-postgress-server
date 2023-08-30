@@ -13,18 +13,21 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './_guards/roles.guard';
 import { JwtAuthGuard } from './_guards/jwt-auth.guard';
 import { StorageModule } from '@squareboat/nest-storage';
-import filesystem from './_utilities/filesystem';
+import filesystem from './_config/filesystem';
+import databaseConfig from './_config/typorm.config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from './_database/database.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UserEntity } from './users/entity/user.entity';
+import { appConstants } from 'apps/constants';
+import { RoleEntity } from './users/roles/roles.entity';
 // import { CaslModule } from './casl/casl.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: process.env.npm_package_env_NODE_ENV === 'development' ? '.env.development' : '.env.production',
-    isGlobal: true, expandVariables: true, load: [configuration/*, filesystem*/], cache: false
+    isGlobal: true, expandVariables: true, load: [configuration, databaseConfig], cache: false
     }),
     
     // Global rate limiting
@@ -32,20 +35,10 @@ import { UserEntity } from './users/entity/user.entity';
       ttl: 60, limit: 10
     }),
 
-    // TypeORM for Databse connections
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DATABASE_HOST,
-      port: parseInt((process.env.DATABASE_PORT || '5432'), 10),
-      username: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      database: process.env.DATABASE_NAME,
-      entities: [__dirname + '/**/*.entity{,ts,.js}'],
-      synchronize: process.env.npm_package_env_NODE_ENV === 'development' ? true : false, // set to false in production
-      retryAttempts: 0,
-      retryDelay: 5000,
-      logging: false
-      //autoLoadEntities: true
+    // // TypeORM for Databse connections
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configSvc: ConfigService) => (configSvc.get('typeorm'))!
     }),
 
     // Gives access to cloud storage
@@ -61,25 +54,28 @@ import { UserEntity } from './users/entity/user.entity';
 
     ClientsModule.register([
       {
-        name: 'MARKET',
+        name: appConstants.AUTH_SERVICE.name,
         transport: Transport.TCP,
-        options: { port: 3001 }
+        options: { port: appConstants.AUTH_SERVICE.port }
       }
     ]),
+  
 
     AuthModule, UsersModule, 
     // DatabaseModule
     // CaslModule
   ],
   controllers: [AppController],
-  providers: [AppService,
-    // { provide: APP_GUARD, useClass: RolesGuard},
+  providers: [AppService, 
     { provide: APP_GUARD, useClass: JwtAuthGuard},
-    { provide: APP_GUARD, useClass: ThrottlerGuard}
+    { provide: APP_GUARD, useClass: ThrottlerGuard},
+    { provide: APP_GUARD, useClass: RolesGuard}
   ],
+  exports: [ClientsModule]
 })
 export class AppModule implements NestModule {
-  constructor(private dataSource: DataSource){}
+  constructor(){}
+
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(logger)

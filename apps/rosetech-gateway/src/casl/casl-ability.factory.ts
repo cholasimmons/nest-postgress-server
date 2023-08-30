@@ -1,8 +1,9 @@
 import { Ability, AbilityBuilder, AbilityClass, ExtractSubjectType, InferSubjects } from "@casl/ability";
 import { Injectable } from "@nestjs/common";
-import { Action } from "src/_enums/role-actions.enum";
-import { PhotoEntity } from "src/photos/entity/photo.entity";
-import { UserEntity } from "src/users/entity/user.entity";
+import { Action } from "../_enums/role-actions.enum";
+import { PhotoEntity } from "../photos/entity/photo.entity";
+import { UserEntity } from "../users/entity/user.entity";
+import { Role } from "../_enums/role.enum";
 
 type Subjects = InferSubjects<typeof PhotoEntity | typeof UserEntity> | 'all';
 
@@ -15,7 +16,7 @@ export class CaslAbilityFactory {
       Ability<[Action, Subjects]>
     >(Ability as AbilityClass<AppAbility>);
 
-    if (user.roles.some(rol => rol==='admin')) {
+    if (user.roles.some((rol: Role) => rol===Role.Admin)) {
       can(Action.Manage, 'all'); // read-write access to everything
     } else {
       can(Action.Read, 'all'); // read-only access to everything

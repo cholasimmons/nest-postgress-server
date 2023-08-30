@@ -1,5 +1,13 @@
 
-export default () => ({
+import { registerAs } from '@nestjs/config';
+import { config as dotenvConfig } from 'dotenv';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import { UserEntity } from '../users/entity/user.entity';
+import { RoleEntity } from '../users/roles/roles.entity';
+
+dotenvConfig({ path: process.env.npm_package_env_NODE_ENV === 'development' ? '.env.development' : '.env.production' });
+
+export const config = {
     port: Number(process.env.NEST_PORT) || 3000,
     jwt: {
       secret: process.env.JWT_SECRET?.toString(),
@@ -12,6 +20,11 @@ export default () => ({
       name: process.env.DATABASE_NAME,
       user: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
+      synchronize: process.env.npm_package_env_NODE_ENV === 'development' ? true : false, // set to false in production
+      logging: false,
+      entities: [UserEntity],
+      migrations: [],
+      autoLoadEntities: true,
       schema: process.env.DATABASE_SCHEMA
     },
     pgadmin: {
@@ -30,5 +43,10 @@ export default () => ({
         }
       }
     }
-  });
+  };
   
+  export default () => ((config))
+
+  export function getAuthSvcOptions(){
+    return config.pgadmin
+  }

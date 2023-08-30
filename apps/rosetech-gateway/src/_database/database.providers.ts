@@ -1,5 +1,5 @@
 import { dirname } from "path";
-import { UserEntity } from "src/users/entity/user.entity";
+import { UserEntity } from "../users/entity/user.entity";
 import { DataSource, DataSourceOptions } from "typeorm";
 
 export const ormOptions:DataSourceOptions = {

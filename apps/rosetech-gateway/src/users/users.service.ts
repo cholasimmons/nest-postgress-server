@@ -5,10 +5,10 @@ import { UserEntity } from './entity/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { UserDto } from './dto/user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { toUserDto } from 'src/_utilities/mapper';
-import { UserRepository } from './user.repository';
-import { Role } from 'src/_enums/role.enum';
-import { comparePasswords } from 'src/_utilities/password.helper';
+import { toUserDto } from '../_utilities/mapper';
+import { Role } from '../_enums/role.enum';
+import { comparePasswords } from '../_utilities/password.helper';
+import { ActionStatus, RegistrationStatus } from '../_interfaces/status.interface';
 
 @Injectable()
 export class UsersService {
@@ -114,11 +114,24 @@ export class UsersService {
     })
   }
 */
-  async findAll(): Promise<UserDto[]>{
-    return this.userRepo.find();
+  async findAll(allUsers: boolean = false): Promise<UserDto[]>{
+    if(allUsers){
+      return (await this.userRepo.find()).map(user => toUserDto(user));
+    } else {
+      const users = (await this.userRepo.find()).filter(user => {
+        user.isActive ? toUserDto(user) : null
+      });
+      return users;
+    }
   }
 
-  async remove(id: number): Promise<void>{
-    await this.userRepo.delete(id);
+  async remove(id: number): Promise<ActionStatus>{
+    let status = { message: 'User has been deleted.', success: true}
+    
+    const deleted = await this.userRepo.delete(id);
+
+    if(!deleted) status = { message: 'Unable to delete that User', success: false}
+    
+    return status
   }
 }

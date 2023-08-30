@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
   import { JwtService } from '@nestjs/jwt';
   import { Request } from 'express';
-import { IS_PUBLIC_KEY } from 'src/_decorators/public.decorator';
+import { IS_PUBLIC_KEY } from '../_decorators/public.decorator';
   
   @Injectable()
   export class JwtAuthGuard implements CanActivate {
@@ -24,7 +24,7 @@ import { IS_PUBLIC_KEY } from 'src/_decorators/public.decorator';
       const token = this.extractTokenFromHeader(request);
 
       if (!token) {
-        throw new UnauthorizedException('Guard found no security token');
+        throw new UnauthorizedException('RoseTech Guard found no security token');
       }
 
       try {
@@ -39,8 +39,10 @@ import { IS_PUBLIC_KEY } from 'src/_decorators/public.decorator';
         request['user'] = payload;
         // console.log('Protected route',request['user']);
         
-      } catch {
-        throw new UnauthorizedException('Guard could not verify security token');
+      } catch(err) {
+        console.log('trycatch error: ',err);
+        
+        throw new UnauthorizedException('RoseTech Guard could not verify you');
       }
       return true;
     }
