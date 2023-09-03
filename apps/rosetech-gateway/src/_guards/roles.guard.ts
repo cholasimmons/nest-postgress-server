@@ -1,5 +1,5 @@
 
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../_decorators/roles.decorator';
 import { Role } from '../_enums/role.enum';
@@ -13,21 +13,25 @@ export class RolesGuard implements CanActivate {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(), context.getClass(),
     ]);
-
-    // const { user } = context.switchToHttp().getRequest();
     
     if (!requiredRoles) {
-      // throw new ForbiddenException('You do not have access.')
+      // throw new UnauthorizedException('You do not have permission to access this resource.')
       return true;
     }
-    console.log('Required Roles: ',requiredRoles);
+    
+    console.log('[RolesGuard] Required Roles: ',requiredRoles);
 
     const { user } = context.switchToHttp().getRequest();
 
-    if(!user) { console.warn('No User in header'); return false; }
+    if(!user) { console.warn('[RolesGuard] No User object'); return false; }
     
-    console.log('This User\'s roles: ',user.roles);
+    console.log('[RolesGuard] This User\'s roles: ',user.roles);
 
-    return requiredRoles.some((role: Role) => user.roles.includes(role));
+    const hasRequiredRoles = requiredRoles.some((role: Role) => user.roles.includes(role));
+
+    if(!hasRequiredRoles){
+      throw new UnauthorizedException('You do not have permission to access this resource.')
+    }
+    return true;
   }
 }

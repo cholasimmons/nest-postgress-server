@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import * as cookieParser from 'cookie-parser';
  import { join } from 'path';
 import { VERSION_NEUTRAL, Version, VersioningType } from '@nestjs/common';
+import { DatabaseExceptionFilter } from './_error-handling/database-connection.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { abortOnError: false, bodyParser: true });
@@ -15,6 +16,7 @@ async function bootstrap() {
     optionsSuccessStatus: 200
   };
 
+  // Swagger
   const config = new DocumentBuilder()
     .setTitle('Mataka Server.')
     .setDescription('Mataka API documentation.')
@@ -37,12 +39,13 @@ async function bootstrap() {
   app.use(cookieParser());
   // app.useGlobalGuards(LocalAuthGuard());
   // const { httpAdapter } = app.get(HttpAdapterHost);
-  // app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+  app.useGlobalFilters(new DatabaseExceptionFilter()); // Databse error catch
 
   // Render Views
+  app.setViewEngine('hbs');
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
-  app.setViewEngine('hbs');
+
 
   app.enableVersioning({type: VersioningType.URI, defaultVersion: '1'})
 

@@ -34,7 +34,7 @@ export class AuthController {
 
 
     @Get('profile')
-    @Roles(Role.Admin)
+    @Roles(Role.Guest)
     // @Public()
     public async getProfile(@Req() req: Request){
         const {email}: any = req.user;
@@ -49,7 +49,7 @@ export class AuthController {
 
 
     @Post('logout')
-    @HttpCode(HttpStatus.ACCEPTED)
+    // @HttpCode(HttpStatus.ACCEPTED)
     public async signOut(){
         return await this.authService.signOut();
     }

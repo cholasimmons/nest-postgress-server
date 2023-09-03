@@ -72,11 +72,11 @@ export class UsersService {
 
     //console.log('[Users Service] LoginUserDto: ', loginUserDto.email);
     
-    if(!user) throw new NotFoundException('User not found');
+    if(!user) throw new NotFoundException('Account not found');
 
     const passAlike = comparePasswords(user!.password, password);
 
-    if(!passAlike) throw new NotFoundException('User not found');
+    if(!passAlike) throw new NotFoundException('Account not found');
     
     return toUserDto(user!);
     // return user;
@@ -118,8 +118,12 @@ export class UsersService {
     if(allUsers){
       return (await this.userRepo.find()).map(user => toUserDto(user));
     } else {
-      const users = (await this.userRepo.find()).filter(user => {
-        user.isActive ? toUserDto(user) : null
+      const users: any[] = [];
+      (await this.userRepo.find()).filter((user: UserEntity) => {
+        if(user.isActive){
+          const u = toUserDto(user)
+          users.push(u)
+        }
       });
       return users;
     }

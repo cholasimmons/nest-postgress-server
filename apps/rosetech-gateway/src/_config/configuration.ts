@@ -14,18 +14,19 @@ export const config = {
       expiresIn: process.env.JWT_EXPIRESIN?.toString(),
     },
     database: {
-      type: process.env.DATABASE_TYPE,
+      // type: process.env.DATABASE_TYPE,
       host: process.env.DATABASE_HOST,
       port: Number(process.env.DATABASE_PORT) || 5432,
-      name: process.env.DATABASE_NAME,
-      user: process.env.DATABASE_USER,
+      username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
-      synchronize: process.env.npm_package_env_NODE_ENV === 'development' ? true : false, // set to false in production
-      logging: false,
+      database: process.env.DATABASE_NAME,
       entities: [UserEntity],
-      migrations: [],
-      autoLoadEntities: true,
-      schema: process.env.DATABASE_SCHEMA
+      synchronize: process.env.npm_package_env_NODE_ENV === 'development' ? true : false // set to false in production
+      
+      // migrations: [],
+      // logging: false,
+      // autoLoadEntities: true,
+      // schema: process.env.DATABASE_SCHEMA
     },
     pgadmin: {
       user: process.env.PGADMIN_USER,

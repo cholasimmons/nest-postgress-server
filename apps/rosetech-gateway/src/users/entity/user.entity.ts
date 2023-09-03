@@ -20,7 +20,7 @@ export class UserEntity extends BaseEntity {
     //   lazy: true,
     // })
     // @JoinTable()
-    @Column({type: 'text', array:true, nullable: true, default: [Role.Guest]})
+    @Column('text', {array:true, nullable: true, default: [Role.Guest]})
     roles: Role[];
 
     @Column({type: 'bool', default: false})

@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { MessagePattern } from '@nestjs/microservices';
+import { Public } from 'apps/rosetech-gateway/src/_decorators/public.decorator';
 
 @Controller()
 export class AuthController {
@@ -12,7 +13,10 @@ export class AuthController {
   }
 
   @Get()
+  @Public()
   getHello(): string {
+    console.log('root endpoint');
+
     return this.authService.getHello('Simmons');
   }
 }

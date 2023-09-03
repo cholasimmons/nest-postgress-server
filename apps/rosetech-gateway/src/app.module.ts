@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import configuration from './_config/configuration';
+import configuration, { config } from './_config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { UsersModule } from './users/users.module';
@@ -37,8 +37,19 @@ import { RoleEntity } from './users/roles/roles.entity';
 
     // // TypeORM for Databse connections
     TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: async (configSvc: ConfigService) => (configSvc.get('typeorm'))!
+      imports: [ConfigModule],
+      useFactory: (configSvc: ConfigService) => ({
+        type: 'postgres',
+        host: configSvc.get('database.host'),
+        port: +configSvc.get('database.port'),
+        username: configSvc.get('database.username'),
+        password: configSvc.get('database.password'),
+        database: configSvc.get('database.database'),
+        entities: [UserEntity],
+        synchronize: process.env.npm_package_env_NODE_ENV === 'development' ? true : false, // set to false in production,
+        schema: configSvc.get('database.schema')
+        // ...config.database
+      }), inject: [ConfigService]
     }),
 
     // Gives access to cloud storage
@@ -67,8 +78,8 @@ import { RoleEntity } from './users/roles/roles.entity';
   ],
   controllers: [AppController],
   providers: [AppService, 
-    { provide: APP_GUARD, useClass: JwtAuthGuard},
     { provide: APP_GUARD, useClass: ThrottlerGuard},
+    { provide: APP_GUARD, useClass: JwtAuthGuard},
     { provide: APP_GUARD, useClass: RolesGuard}
   ],
   exports: [ClientsModule]
